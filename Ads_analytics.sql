@@ -61,49 +61,49 @@ ORDER BY income;
 --Предыдущая версия
 --заработок по дням за рекламу CPM
 -- больше всего за 5 апреля, меньше всего за 1 апреля
--- SELECT date,round(sum(ad_cost),2) as income
--- FROM ads_data
--- WHERE (ad_cost_type = 'CPM' and event = 'view')
--- GROUP BY date
--- ORDER BY income;
+SELECT date,round(sum(ad_cost),2) as income
+FROM ads_data
+WHERE (ad_cost_type = 'CPM' and event = 'view')
+GROUP BY date
+ORDER BY income;
 -- заработок за рекламу CPC
 -- больше всего за 6 апреля, меньше всего за 5 апреля
--- SELECT date,round(sum(ad_cost),2) as income
--- FROM ads_data
--- WHERE (ad_cost_type = 'CPC' and event = 'click')
--- GROUP BY date
--- ORDER BY income;
+SELECT date,round(sum(ad_cost),2) as income
+FROM ads_data
+WHERE (ad_cost_type = 'CPC' and event = 'click')
+GROUP BY date
+ORDER BY income;
 
 -- 7. Какая платформа самая популярная для размещения рекламных объявлений? android
 --(Поменяла с count(add_id) на countIf(event = 'view'), но соотношение с округлением до целого не поменялось)
 -- Сколько процентов показов приходится на каждую из платформ (колонка platform)? web - 20%, ios - 30%, android - 50%
--- SELECT platform,
---        round((countIf(event = 'view')*100)/(select countIf(event = 'view') from ads_data)) as popularity
--- FROM ads_data
--- GROUP BY platform
--- ORDER BY popularity;
+SELECT platform,
+       round((countIf(event = 'view')*100)/(select countIf(event = 'view') from ads_data)) as popularity
+FROM ads_data
+GROUP BY platform
+ORDER BY popularity;
 --
 -- 8. объявления, по которым сначала произошел клик, а только потом показ?
 -- 112583 - одновременно мнонго кликов и показов - надо разобраться с ребятками=);
 -- берем самую раннюю дату появления по каждой ad_id, выбираем из этих дат те, где события click.
 -- исключаем те, у которых были только click в задаче 4 и исключаем 112583 - получилось 13 ad_id
 --
--- SELECT time,event, ad_id
--- FROM ads_data
--- WHERE ad_id = 112583
--- ORDER BY ad_id,time;
+SELECT time,event, ad_id
+FROM ads_data
+WHERE ad_id = 112583
+ORDER BY ad_id,time;
 
--- SELECT a_d.ad_id, a_d.event, a_d.time
--- FROM ads_data a_d INNER JOIN
---     (
---         SELECT ad_id, MIN(time) AS MinTime
---         FROM ads_data
---         GROUP BY ad_id
---     ) t ON a_d.ad_id = t.ad_id AND a_d.time = t.MinTime
--- WHERE a_d.event = 'click' and a_d.ad_id NOT IN( SELECT ad_id
---                                                 FROM ads_data
---                                                 GROUP BY ad_id
---                                                 HAVING countIf(event = 'view') = 0
---                                                 )
--- and a_d.ad_id != 112583
--- ORDER BY ad_id;
+SELECT a_d.ad_id, a_d.event, a_d.time
+FROM ads_data a_d INNER JOIN
+    (
+        SELECT ad_id, MIN(time) AS MinTime
+        FROM ads_data
+        GROUP BY ad_id
+    ) t ON a_d.ad_id = t.ad_id AND a_d.time = t.MinTime
+WHERE a_d.event = 'click' and a_d.ad_id NOT IN( SELECT ad_id
+                                                FROM ads_data
+                                                GROUP BY ad_id
+                                                HAVING countIf(event = 'view') = 0
+                                                )
+and a_d.ad_id != 112583
+ORDER BY ad_id;
